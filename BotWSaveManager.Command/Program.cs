@@ -1,9 +1,9 @@
-﻿using System;
+﻿using BotWSaveManager.Conversion;
+using BotWSaveManager.Conversion.IO;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BotWSaveManager.Conversion;
-using BotWSaveManager.Conversion.IO;
 
 namespace BotWSaveManager.Command
 {
@@ -104,7 +104,7 @@ namespace BotWSaveManager.Command
                     {
                         string saveTo = Directory.GetFiles(saveLocation, "*.sav", SearchOption.AllDirectories)
                             .First(e => Path.GetFileName(convertSaveByte.Key) == "option.sav" ||
-                                Path.GetFileName(e) == Path.GetFileName(convertSaveByte.Key) && 
+                                Path.GetFileName(e) == Path.GetFileName(convertSaveByte.Key) &&
                                 Directory.GetParent(e).Name == Directory.GetParent(convertSaveByte.Key).Name);
 
                         File.WriteAllBytes(saveTo, convertSaveByte.Value);

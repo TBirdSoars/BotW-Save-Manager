@@ -20,7 +20,7 @@ namespace BotWSaveManager.Conversion
 
         private bool skip;
 
-        private static List<int> filesizes = new List<int>
+        private static readonly List<int> filesizes = new List<int>
         {
             896976,
             897160,
@@ -31,7 +31,7 @@ namespace BotWSaveManager.Conversion
             1027208
         };
 
-        private static List<int> headers = new List<int>
+        private static readonly List<int> headers = new List<int>
         {
             0x24e2,
             0x24EE,
@@ -43,7 +43,7 @@ namespace BotWSaveManager.Conversion
             0x471e
         };
 
-        private static List<string> versionList = new List<string>
+        private static readonly List<string> versionList = new List<string>
         {
             "v1.0",
             "v1.1",
@@ -55,7 +55,7 @@ namespace BotWSaveManager.Conversion
             "v1.6"
         };
 
-        private static List<string> items = new List<string>
+        private static readonly List<string> items = new List<string>
         {
             "Item", "Weap", "Armo", "Fire", "Norm", "IceA", "Elec", "Bomb", "Anci", "Anim",
             "Obj_", "Game", "Dm_N", "Dm_A", "Dm_E", "Dm_P", "FldO", "Gano", "Gian", "Grea",
@@ -65,7 +65,7 @@ namespace BotWSaveManager.Conversion
             "Lana", "Hate", "Akka", "Yash", "Dung", "BeeH", "Boar", "Boko", "Brig", "DgnO"
         };
 
-        private static List<string> hash = new List<string>
+        private static readonly List<string> hash = new List<string>
         {
             "7B74E117", "17E1747B", "D913B769", "69B713D9", "B666D246", "46D266B6", "021A6FF2",
             "F26F1A02", "FF74960F", "0F9674FF", "8932285F", "5F283289", "3B0A289B", "9B280A3B",
@@ -78,23 +78,23 @@ namespace BotWSaveManager.Conversion
 
         public Save(string folder, bool skipVersionCheck = false)
         {
-            this.SaveFolder = folder;
+            SaveFolder = folder;
 
-            if (!File.Exists(Path.Combine(this.SaveFolder, "option.sav")))
+            if (!File.Exists(Path.Combine(SaveFolder, "option.sav")))
             {
                 throw new ArgumentException("The selected folder is not a valid Breath of the Wild save folder. " +
                                             "Please select a folder containing valid save data, including option.sav " +
                                             "in the root of the folder.");
             }
 
-            using (FileStream fs = new FileStream(Path.Combine(this.SaveFolder, "option.sav"), FileMode.Open))
+            using (FileStream fs = new FileStream(Path.Combine(SaveFolder, "option.sav"), FileMode.Open))
             using (BinaryReader br = new BinaryReader(fs))
             {
                 byte[] check = br.ReadBytes(1);
-                this.SaveConsoleType = ByteArrayToString(check) == "00" ? SaveType.WiiU : SaveType.Switch;
+                SaveConsoleType = ByteArrayToString(check) == "00" ? SaveType.WiiU : SaveType.Switch;
             }
 
-            foreach (string file in Directory.EnumerateFiles(this.SaveFolder, "game_data.sav", SearchOption.AllDirectories))
+            foreach (string file in Directory.EnumerateFiles(SaveFolder, "game_data.sav", SearchOption.AllDirectories))
             {
                 using (FileStream fs = new FileStream(file, FileMode.Open))
                 using (BinaryReader br = new BinaryReader(fs))
@@ -102,7 +102,7 @@ namespace BotWSaveManager.Conversion
                     // Not a reliable way to determine game version
                     //this.GameVersion = versionList[filesizes.IndexOf((int)f.Length)];
 
-                    if (this.SaveConsoleType == SaveType.WiiU)
+                    if (SaveConsoleType == SaveType.WiiU)
                     {
                         while (ByteArrayToString(br.ReadBytes(1)) == "00")
                         {
@@ -114,7 +114,7 @@ namespace BotWSaveManager.Conversion
 
                         try
                         {
-                            this.SaveVersionList.Add(versionList[headers.IndexOf(BitConverter.ToInt16(backwardsHeader.Reverse().ToArray(), 0))]);
+                            SaveVersionList.Add(versionList[headers.IndexOf(BitConverter.ToInt16(backwardsHeader.Reverse().ToArray(), 0))]);
                         }
                         catch (Exception e)
                         {
@@ -132,28 +132,28 @@ namespace BotWSaveManager.Conversion
                         {
                             if (BitConverter.ToInt16(br.ReadBytes(2), 0) == 0x2a46)
                             {
-                                this.SaveVersionList.Add(versionList[headers.IndexOf(0x29c0)]); //v1.3.0 switch?
+                                SaveVersionList.Add(versionList[headers.IndexOf(0x29c0)]); //v1.3.0 switch?
                                 return;
                             }
 
                             br.BaseStream.Position = 0;
 
-                            if (BitConverter.ToInt16(br.ReadBytes(2), 0) == 0x3ef9) 
+                            if (BitConverter.ToInt16(br.ReadBytes(2), 0) == 0x3ef9)
                             {
-                                this.SaveVersionList.Add(versionList[headers.IndexOf(0x3ef8)]); //v1.3.3 switch?
+                                SaveVersionList.Add(versionList[headers.IndexOf(0x3ef8)]); //v1.3.3 switch?
                                 return;
                             }
 
                             br.BaseStream.Position = 0;
 
-                            this.SaveVersionList.Add(versionList[headers.IndexOf(BitConverter.ToInt16(br.ReadBytes(2), 0))]);
+                            SaveVersionList.Add(versionList[headers.IndexOf(BitConverter.ToInt16(br.ReadBytes(2), 0))]);
                         }
                         catch (Exception e)
                         {
                             Console.WriteLine(e);
                             if (!skipVersionCheck)
                             {
-                                throw new UnsupportedSaveException("The version of a numbered save folder you selected cannot be retrieved.") {IsSwitch = true};
+                                throw new UnsupportedSaveException("The version of a numbered save folder you selected cannot be retrieved.") { IsSwitch = true };
                             }
                         }
                     }
@@ -165,7 +165,7 @@ namespace BotWSaveManager.Conversion
         {
             Dictionary<string, byte[]> returnBytesDict = new Dictionary<string, byte[]>();
 
-            foreach (string file in Directory.GetFiles(this.SaveFolder, "*.sav", SearchOption.AllDirectories))
+            foreach (string file in Directory.GetFiles(SaveFolder, "*.sav", SearchOption.AllDirectories))
             {
                 byte[] currentFileBytes = File.ReadAllBytes(file);
 
@@ -198,14 +198,14 @@ namespace BotWSaveManager.Conversion
                             ms.Position = h * 4;
                             endianUpd.Write(endianConv);
                             h++;
-                            this.skip = true;
+                            skip = true;
                         }
                         else
                         {
-                            this.skip = false;
+                            skip = false;
                         }
 
-                        if (CheckString(endianConv) == false && this.skip == false) // make sure we don't convert strings
+                        if (CheckString(endianConv) == false && skip == false) // make sure we don't convert strings
                         {
                             Array.Reverse(endianConv);
 
@@ -213,7 +213,7 @@ namespace BotWSaveManager.Conversion
                             ms.Position = h * 4;
                             endianUpd.Write(endianConv);
                         }
-                        else if (this.skip == false)
+                        else if (skip == false)
                         {
                             h++;
                             for (int i = 0; i < 16; i++)
@@ -240,8 +240,8 @@ namespace BotWSaveManager.Conversion
                     returnBytesDict.Add(file, ms.ToArray());
                 }
             }
-            
-            this.SaveConsoleType = this.SaveConsoleType == SaveType.Switch ? SaveType.WiiU : SaveType.Switch;
+
+            SaveConsoleType = SaveConsoleType == SaveType.Switch ? SaveType.WiiU : SaveType.Switch;
 
             return returnBytesDict;
         }
