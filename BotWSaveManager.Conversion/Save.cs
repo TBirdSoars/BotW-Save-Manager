@@ -228,7 +228,7 @@ namespace BotWSaveManager.Conversion
                                 endianUpd.Write(endianHash);
                             }
 
-                            h = h + 0x1E;
+                            h += 0x1E;
                         }
                     }
 
